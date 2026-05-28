@@ -2280,7 +2280,7 @@ local ChatPlaceholder = createInstance("TextLabel", {
 })
 
 --// ============================================
---// 10. MOBILE QUICK ACTIONS (with Dynamic Scaling)
+--// 10. MOBILE QUICK ACTIONS (with Dynamic Scaling & Dual Pages)
 --// ============================================
 -- Calculate scaled cell size for high-density displays
 local baseCellHeight = 35
@@ -2300,11 +2300,30 @@ local QuickActionsFrame = createInstance("Frame", {
 addCorner(QuickActionsFrame, 8)
 addStroke(QuickActionsFrame, Colors.Border, 1)
 
+-- Container for pages
+local PagesContainer = createInstance("Frame", {
+    Name = "PagesContainer",
+    Size = UDim2.new(1, -12, 1, -12),
+    Position = UDim2.new(0, 6, 0, 6),
+    BackgroundTransparency = 1,
+    ClipsDescendants = true,
+    Parent = QuickActionsFrame
+})
+
+-- Page 1 (Main Quick Actions)
+local Page1 = createInstance("Frame", {
+    Name = "Page1",
+    Size = UDim2.new(1, 0, 1, 0),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundTransparency = 1,
+    Parent = PagesContainer
+})
+
 local QuickActionsGrid = createInstance("UIGridLayout", {
     CellSize = UDim2.new(0.33, -4, 0, scaledCellHeight),
     CellPadding = UDim2.new(0, 4, 0, 4),
     SortOrder = Enum.SortOrder.LayoutOrder,
-    Parent = QuickActionsFrame
+    Parent = Page1
 })
 
 createInstance("UIPadding", {
@@ -2312,7 +2331,31 @@ createInstance("UIPadding", {
     PaddingBottom = UDim.new(0, 6),
     PaddingLeft = UDim.new(0, 6),
     PaddingRight = UDim.new(0, 6),
-    Parent = QuickActionsFrame
+    Parent = Page1
+})
+
+-- Page 2 (Additional Actions - Placeholder)
+local Page2 = createInstance("Frame", {
+    Name = "Page2",
+    Size = UDim2.new(1, 0, 1, 0),
+    Position = UDim2.new(1, 0, 0, 0),
+    BackgroundTransparency = 1,
+    Parent = PagesContainer
+})
+
+local QuickActionsGrid2 = createInstance("UIGridLayout", {
+    CellSize = UDim2.new(0.33, -4, 0, scaledCellHeight),
+    CellPadding = UDim2.new(0, 4, 0, 4),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    Parent = Page2
+})
+
+createInstance("UIPadding", {
+    PaddingTop = UDim.new(0, 6),
+    PaddingBottom = UDim.new(0, 6),
+    PaddingLeft = UDim.new(0, 6),
+    PaddingRight = UDim.new(0, 6),
+    Parent = Page2
 })
 
 -- Quick Actions with toggle state tracking
@@ -2329,117 +2372,133 @@ local QuickActions = {
     {text = "Anti-Lag", onCmd = "antilag", offCmd = nil, color = Colors.Orange, toggleable = false},
 }
 
-for i, action in ipairs(QuickActions) do
-    local btn = createInstance("TextButton", {
-        Name = "QuickAction_" .. action.text,
-        Size = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = action.color,
-        BackgroundTransparency = 0.7,
-        Text = action.text,
-        TextColor3 = Colors.Text,
-        Font = Enum.Font.GothamBold,
-        TextSize = scaledFontSize,
-        LayoutOrder = i,
-        Parent = QuickActionsFrame
-    })
-    addCorner(btn, 4)
-    
-    -- Initialize state before setting up events
-    QuickActionStates[action.text] = false
-    
-    -- Helper function to update button visual based on toggle state
-    local function updateButtonVisual()
-        local isActive = action.toggleable and QuickActionStates[action.text]
-        if isActive then
-            -- Active toggle state - show highlighted
-            btn.BackgroundTransparency = 0.2
-            btn.TextColor3 = Color3.new(1, 1, 1)
-        else
-            -- Default/inactive state
-            btn.BackgroundTransparency = 0.7
-            btn.TextColor3 = Colors.Text
+-- Page 2 Placeholder Actions (all set speed to 100 for now)
+local PlaceholderActions = {
+    {text = "Feature 1", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 2", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 3", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 4", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 5", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 6", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 7", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 8", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+    {text = "Feature 9", onCmd = "speed 100", offCmd = nil, color = Colors.Cyan or Color3.fromRGB(0, 255, 255), toggleable = false},
+}
+
+-- Function to create buttons for a page
+local function createPageButtons(pageFrame, actionsList)
+    for i, action in ipairs(actionsList) do
+        local btn = createInstance("TextButton", {
+            Name = "QuickAction_" .. action.text,
+            Size = UDim2.new(0, 0, 0, 0),
+            BackgroundColor3 = action.color,
+            BackgroundTransparency = 0.7,
+            Text = action.text,
+            TextColor3 = Colors.Text,
+            Font = Enum.Font.GothamBold,
+            TextSize = scaledFontSize,
+            LayoutOrder = i,
+            Parent = pageFrame
+        })
+        addCorner(btn, 4)
+        
+        -- Initialize state before setting up events
+        QuickActionStates[action.text] = false
+        
+        -- Helper function to update button visual based on toggle state
+        local function updateButtonVisual()
+            local isActive = action.toggleable and QuickActionStates[action.text]
+            if isActive then
+                btn.BackgroundTransparency = 0.2
+                btn.TextColor3 = Color3.new(1, 1, 1)
+            else
+                btn.BackgroundTransparency = 0.7
+                btn.TextColor3 = Colors.Text
+            end
         end
-    end
-    
-    -- Desktop hover effects (only apply on non-mobile)
-    if not IsMobile then
-        ConnectPersistent(btn.MouseEnter, function()
-            local isActive = QuickActionStates[action.text]
-            TweenService:Create(btn, TweenInfo.new(0.1), {
-                BackgroundTransparency = isActive and 0.1 or 0.3,
-                TextColor3 = Color3.new(1, 1, 1)
+        
+        -- Desktop hover effects (only apply on non-mobile)
+        if not IsMobile then
+            ConnectPersistent(btn.MouseEnter, function()
+                local isActive = QuickActionStates[action.text]
+                TweenService:Create(btn, TweenInfo.new(0.1), {
+                    BackgroundTransparency = isActive and 0.1 or 0.3,
+                    TextColor3 = Color3.new(1, 1, 1)
+                }):Play()
+            end)
+            
+            ConnectPersistent(btn.MouseLeave, function()
+                local isActive = QuickActionStates[action.text]
+                local targetTransparency = isActive and 0.2 or 0.7
+                local targetColor = isActive and Color3.new(1, 1, 1) or Colors.Text
+                TweenService:Create(btn, TweenInfo.new(0.1), {
+                    BackgroundTransparency = targetTransparency,
+                    TextColor3 = targetColor
+                }):Play()
+            end)
+        end
+        
+        -- Press effect (works on both mobile and desktop)
+        ConnectPersistent(btn.MouseButton1Down, function()
+            TweenService:Create(btn, TweenInfo.new(0.05), {
+                BackgroundTransparency = 0
             }):Play()
         end)
         
-        ConnectPersistent(btn.MouseLeave, function()
-            -- Respect toggle state when leaving
+        ConnectPersistent(btn.MouseButton1Up, function()
             local isActive = QuickActionStates[action.text]
             local targetTransparency = isActive and 0.2 or 0.7
-            local targetColor = isActive and Color3.new(1, 1, 1) or Colors.Text
             TweenService:Create(btn, TweenInfo.new(0.1), {
-                BackgroundTransparency = targetTransparency,
-                TextColor3 = targetColor
+                BackgroundTransparency = targetTransparency
             }):Play()
         end)
-    end
-    
-    -- Press effect (works on both mobile and desktop)
-    ConnectPersistent(btn.MouseButton1Down, function()
-        TweenService:Create(btn, TweenInfo.new(0.05), {
-            BackgroundTransparency = 0
-        }):Play()
-    end)
-    
-    ConnectPersistent(btn.MouseButton1Up, function()
-        -- Return to appropriate state after press
-        local isActive = QuickActionStates[action.text]
-        local targetTransparency = isActive and 0.2 or 0.7
-        TweenService:Create(btn, TweenInfo.new(0.1), {
-            BackgroundTransparency = targetTransparency
-        }):Play()
-    end)
-    
-    -- Click/Tap handler (works on both mobile and desktop)
-    ConnectPersistent(btn.MouseButton1Click, function()
-        if action.toggleable then
-            -- Toggle state
-            local wasActive = QuickActionStates[action.text]
-            QuickActionStates[action.text] = not wasActive
-            local isNowActive = QuickActionStates[action.text]
-            
-            -- Execute appropriate command
-            local cmd = wasActive and action.offCmd or action.onCmd
-            if cmd then
-                InputBox.Text = cmd
+        
+        -- Click/Tap handler (works on both mobile and desktop)
+        ConnectPersistent(btn.MouseButton1Click, function()
+            if action.toggleable then
+                local wasActive = QuickActionStates[action.text]
+                QuickActionStates[action.text] = not wasActive
+                local isNowActive = QuickActionStates[action.text]
+                
+                local cmd = wasActive and action.offCmd or action.onCmd
+                if cmd then
+                    InputBox.Text = cmd
+                    InputBox:CaptureFocus()
+                    task.wait(0.1)
+                    InputBox:ReleaseFocus(true)
+                end
+                
+                local targetTransparency = isNowActive and 0.2 or 0.7
+                local targetColor = isNowActive and Color3.new(1, 1, 1) or Colors.Text
+                btn.BackgroundTransparency = targetTransparency
+                btn.TextColor3 = targetColor
+            else
+                InputBox.Text = action.onCmd
                 InputBox:CaptureFocus()
                 task.wait(0.1)
                 InputBox:ReleaseFocus(true)
             end
-            
-            -- Visual feedback for toggle state (immediate update)
-            local targetTransparency = isNowActive and 0.2 or 0.7
-            local targetColor = isNowActive and Color3.new(1, 1, 1) or Colors.Text
-            btn.BackgroundTransparency = targetTransparency
-            btn.TextColor3 = targetColor
-        else
-            -- Non-toggleable actions (one-time execution)
-            InputBox.Text = action.onCmd
-            InputBox:CaptureFocus()
-            task.wait(0.1)
-            InputBox:ReleaseFocus(true)
-        end
-    end)
+        end)
+    end
 end
 
-local rows = math.ceil(#QuickActions / 3)
+-- Create buttons for both pages
+createPageButtons(Page1, QuickActions)
+createPageButtons(Page2, PlaceholderActions)
+
+local rows = math.ceil(math.max(#QuickActions, #PlaceholderActions) / 3)
 local gridHeight = (rows * scaledCellHeight) + ((rows - 1) * 4) + 12
 
--- Quick Actions Toggle moved to left of input box for mobile (to avoid minimizing obstruction)
+-- Page navigation state
+local currentPage = 1
+local maxPages = 2
+
+-- Quick Actions Toggle
 local QuickActionsToggle = createInstance("TextButton", {
     Name = "QuickActionsToggle",
     Size = UDim2.new(0, QuickActionWidth, 0, QuickActionWidth),
-    AnchorPoint = Vector2.new(0, 0), -- Top-Left alignment
-    Position = UDim2.new(0, 8 + BtnWidth + 6, 0, 10), -- Placed after Mode Dropdown
+    AnchorPoint = Vector2.new(0, 0),
+    Position = UDim2.new(0, 8 + BtnWidth + 6, 0, 10),
     BackgroundColor3 = Colors.Purple,
     BackgroundTransparency = 0.5,
     Text = "⚡",
@@ -2464,6 +2523,71 @@ ConnectPersistent(QuickActionsToggle.MouseButton1Click, function()
             if not quickActionsOpen then QuickActionsFrame.Visible = false end
         end)
     end
+end)
+
+-- Page Navigation Arrows
+local function createNavArrow(position, direction, callback)
+    local arrow = createInstance("TextButton", {
+        Name = "NavArrow_" .. direction,
+        Size = UDim2.new(0, 30, 0, 30),
+        Position = position,
+        BackgroundColor3 = Colors.Purple,
+        BackgroundTransparency = 0.5,
+        Text = direction == "left" and "◀" or "▶",
+        TextColor3 = Colors.Text,
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        Visible = false,
+        ZIndex = 6,
+        Parent = MainFrame
+    })
+    addCorner(arrow, 4)
+    
+    ConnectPersistent(arrow.MouseButton1Click, callback)
+    
+    -- Hover effect
+    if not IsMobile then
+        ConnectPersistent(arrow.MouseEnter, function()
+            TweenService:Create(arrow, TweenInfo.new(0.1), {BackgroundTransparency = 0.2}):Play()
+        end)
+        ConnectPersistent(arrow.MouseLeave, function()
+            TweenService:Create(arrow, TweenInfo.new(0.1), {BackgroundTransparency = 0.5}):Play()
+        end)
+    end
+    
+    return arrow
+end
+
+local LeftArrow = createNavArrow(UDim2.new(0, 8, 1, -40), "left", function()
+    if currentPage > 1 then
+        currentPage = currentPage - 1
+        TweenService:Create(PagesContainer, TweenInfo.new(0.3), {
+            Position = UDim2.new(-(currentPage - 1), 0, 0, 0)
+        }):Play()
+        updateArrowVisibility()
+    end
+end)
+
+local RightArrow = createNavArrow(UDim2.new(1, -38, 1, -40), "right", function()
+    if currentPage < maxPages then
+        currentPage = currentPage + 1
+        TweenService:Create(PagesContainer, TweenInfo.new(0.3), {
+            Position = UDim2.new(-(currentPage - 1), 0, 0, 0)
+        }):Play()
+        updateArrowVisibility()
+    end
+end)
+
+local function updateArrowVisibility()
+    LeftArrow.Visible = quickActionsOpen and currentPage > 1
+    RightArrow.Visible = quickActionsOpen and currentPage < maxPages
+end
+
+-- Update arrow visibility when toggling quick actions
+local originalToggleCallback = QuickActionsToggle.MouseButton1Click
+ConnectPersistent(QuickActionsToggle.MouseButton1Click, function()
+    task.wait(0.05)
+    updateArrowVisibility()
 end)
 
 
